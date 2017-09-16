@@ -1,13 +1,20 @@
 @echo off
 SETLOCAL EnableDelayedExpansion
 
+set exitCode=1
+
 if "%3%"=="" (
+	set exitMode=timeout
 	set timeout=10
 ) else (
-	set timeout=%3
+	if "%3%"=="pause" (
+		set exitMode=pause
+	) else (
+		set exitMode=timeout
+		set timeout=%3
+	)
 )
 
-set ExitCode=1
 rem ****
 rem check parameters
 
@@ -29,7 +36,7 @@ rem see https://stackoverflow.com/a/21765973/6287240
 set workDir=%workDir:"=%
 if not exist %workDir% (
 	echo dir does not exist "%workDir%"
-	set ExitCode=2
+	set exitCode=2
 	goto EXIT_OR_WAIT
 )
 
@@ -38,7 +45,7 @@ set batchFile=%batchFile:"=%
 set batchFileAbs=%workDir%\%batchFile%
 if not exist %batchFileAbs% (
 	echo file does not exist "%batchFileAbs%"
-	set ExitCode=2
+	set exitCode=2
 	goto EXIT_OR_WAIT
 )
 
@@ -47,7 +54,7 @@ for %%i in (%batchFileAbs%) do (
 	rem see https://stackoverflow.com/a/138847/6287240
 	if not "%%~xi"==".bat" (
 		echo the file must have ".bat" extension
-		set ExitCode=2
+		set exitCode=2
 		goto EXIT_OR_WAIT
 	)
 )
@@ -68,21 +75,37 @@ if errorlevel 1 (
 echo Start Time: %startTime%
 echo   End Time: %time%
 
-set ExitCode=0
+set exitCode=0
 goto EXIT_OR_WAIT
 
 :PARAM_ERR
-echo expected parameters: workDir batchFile [timeout]
-echo timout: default is 10 seconds
-set ExitCode=2
+echo.
+echo USAGE
+echo.
+echo Expected parameters: workDir batchFile [ExitMode]
+echo.
+echo * workDir   the working directory where the batchFile is located
+echo * batchFile the batch file to execute
+echo * ExitMode  is optional and can have these values:
+echo   * pause: the script will wait for a key-press
+echo   * missing (DEFAULT): is the same as passing 10
+echo   * any number: the script will wait for the specified number of seconds and then exit. During the timeout, you can:
+echo     * press any key to stop waiting immediately
+echo     * or press CTRL-C to abort waiting (e.g. when you want to scroll the cmd-window or copy the window text, etc.)
+echo             pause will wait for a key-press
+echo             SEC   will timeout for the specified number of seconds
+echo.
+exit /B 2
 
 :EXIT_OR_WAIT
-if not %timeout%==0 (
-	echo. 
-	echo Press CTRL+C to abort
-	TIMEOUT %timeout%
-)
-exit /B %ExitCode%
+if "%exitMode%"=="pause" (
+	pause
+	exit /B %exitCode%
+) 
+
+if not "%timeout%"=="0" TIMEOUT %timeout% 
+
+
 
 
 
