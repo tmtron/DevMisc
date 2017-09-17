@@ -18,31 +18,25 @@ if "%3%"=="" (
 rem ****
 rem check parameters
 
-if "%1%"=="" (
+set workDir=%1%
+rem %1:"=% will remove quotes 
+rem see https://stackoverflow.com/a/21765973/6287240
+set workDir=%workDir:"=%
+
+if "%workDir%"=="" (
 	echo "workDir" parameter missing
 	goto PARAM_ERR
 )
-if "%2%"=="" (
+set batchFile=%2%
+set batchFile=%batchFile:"=%
+if "%batchFile%"=="" (
 	echo "batchFile" parameter missing
 	goto PARAM_ERR
 )
 
 rem ****
 rem check if files/dirs exist
-
-set workDir=%1%
-rem %1:"=% will remove quotes 
-rem see https://stackoverflow.com/a/21765973/6287240
-set workDir=%workDir:"=%
-if not exist %workDir% (
-	echo dir does not exist "%workDir%"
-	set exitCode=2
-	goto EXIT_OR_WAIT
-)
-
-set batchFile=%2%
-set batchFile=%batchFile:"=%
-set batchFileAbs=%workDir%\%batchFile%
+set batchFileAbs="%workDir%\%batchFile%"
 if not exist %batchFileAbs% (
 	echo file does not exist "%batchFileAbs%"
 	set exitCode=2
@@ -63,9 +57,9 @@ rem ****
 rem work
 
 echo executing "%batchFile% in %workDir%"
-cd /D %workDir%
+cd /D "%workDir%"
 set startTime=%time%
-call %batchFile%
+call "%batchFile%"
 echo. 
 if errorlevel 1 (
 	echo Script "%batchFile%" FAILED: %ERRORLEVEL%
