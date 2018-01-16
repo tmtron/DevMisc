@@ -42,6 +42,7 @@ C:\scripts\ExecuteBatch.bat "$(CURRENT_DIRECTORY)" "$(FILE_NAME)" [ExitMode]
 `ExitMode` is optional and can have these values:
 
 * `pause`: the script will wait for a key-press
+* `pauseOnError`: the script will wait for a key-press when the batch script failed
 * missing (DEFAULT): is the same as passing 10
 * any number (e.g. `12`): the script will wait for the specified number of 
 seconds and then exit. During the timeout, you can:

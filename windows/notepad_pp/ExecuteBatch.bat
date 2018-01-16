@@ -10,10 +10,15 @@ if "%3%"=="" (
 	if "%3%"=="pause" (
 		set exitMode=pause
 	) else (
-		set exitMode=timeout
-		set timeout=%3
+		if "%3%"=="pauseOnError" (
+			set exitMode=pauseOnError
+		) else (
+			set exitMode=timeout
+			set timeout=%3
+		)
 	)
 )
+rem echo Computed exitMode %exitMode%
 
 rem ****
 rem check parameters
@@ -63,8 +68,16 @@ call "%batchFile%"
 echo. 
 if errorlevel 1 (
 	echo Script "%batchFile%" FAILED: %ERRORLEVEL%
+	if "%exitMode%"=="pauseOnError" (
+		rem Wait for user key-press
+		set exitMode=pause
+	)
 ) else (
 	echo Script "%batchFile%" SUCCEEDED
+	if "%exitMode%"=="pauseOnError" (
+		rem Exit immediately
+		set timeout=0
+	)
 )
 echo Start Time: %startTime%
 echo   End Time: %time%
@@ -82,6 +95,7 @@ echo * workDir   the working directory where the batchFile is located
 echo * batchFile the batch file to execute
 echo * ExitMode  is optional and can have these values:
 echo   * pause: the script will wait for a key-press
+echo   * pauseOnError: the script will wait for a key-press when the batch script failed
 echo   * missing (DEFAULT): is the same as passing 10
 echo   * any number: the script will wait for the specified number of seconds and then exit. During the timeout, you can:
 echo     * press any key to stop waiting immediately
